@@ -1,0 +1,7 @@
+import { z } from 'zod';
+export const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+export const timeSchema = z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/);
+export const imageSchema = z.string().max(2048).refine(v => !v || /^\/images\/[\w./-]+$/.test(v) || /^asset:[\w-]+$/.test(v) || (() => { try { return new URL(v).protocol === 'https:'; } catch { return false; } })(), 'Usa una ruta /images/, una imagen subida o una URL HTTPS.');
+export const serviceInput = z.object({ id: z.string().max(80).optional(), name: z.string().trim().min(2).max(100), description: z.string().max(600), priceCents: z.number().int().min(0).max(1000000), durationMinutes: z.number().int().min(15).max(240).multipleOf(15), image: imageSchema, active: z.boolean() });
+export const barberInput = z.object({ id: z.string().max(80).optional(), name: z.string().trim().min(2).max(100), specialty: z.string().max(200), image: imageSchema, active: z.boolean() });
+export const bookingInput = z.object({ serviceId: z.string().min(1).max(80), barberId: z.string().min(1).max(80), date: dateSchema, time: timeSchema, name: z.string().trim().min(2).max(100), phone: z.string().regex(/^\+?[0-9 ()-]{9,20}$/).transform(v => v.replace(/[^\d+]/g, '')).refine(v => /^\+?\d{9,15}$/.test(v)), accepted: z.literal(true), policyVersion: z.string().max(100), expectedPriceCents: z.number().int().min(0), requestId: z.string().uuid() });
